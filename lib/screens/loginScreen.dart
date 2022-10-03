@@ -7,8 +7,32 @@ import '../screens/signUpScreen.dart';
 import '../utils/helper.dart';
 import '../widgets/customTextInput.dart';
 
-class LoginScreen extends StatelessWidget {
+import '../model/userModel.dart';
+import '../utils/apiService.dart';
+
+
+class LoginScreen extends StatefulWidget {
   static const routeName = "/loginScreen";
+  const LoginScreen({Key key}) : super(key: key);
+
+  @override
+  State<LoginScreen> createState() => _LoginScreen();
+
+}
+
+class _LoginScreen extends State<LoginScreen> {
+
+  final txtEmail = TextEditingController();
+  final txtPassword = TextEditingController();
+
+  @override
+  void dispose() {
+    // Clean up the controller when the widget is disposed.
+    txtEmail.dispose();
+    txtPassword.dispose();
+    super.dispose();
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -32,10 +56,12 @@ class LoginScreen extends StatelessWidget {
                 Text('Add your details to login'),
                 Spacer(),
                 CustomTextInput(
+                  controller: txtEmail,
                   hintText: "Your email",
                 ),
                 Spacer(),
                 CustomTextInput(
+                  controller: txtPassword,
                   hintText: "password",
                 ),
                 Spacer(),
@@ -43,7 +69,18 @@ class LoginScreen extends StatelessWidget {
                   height: 50,
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            // Retrieve the text that the user has entered by using the
+                            // TextEditingController.
+                            content: Text(txtEmail.text + txtPassword.text)
+                          );
+                        },
+                      );
+                    },
                     child: Text("Login"),
                   ),
                 ),
@@ -149,3 +186,4 @@ class LoginScreen extends StatelessWidget {
     );
   }
 }
+
