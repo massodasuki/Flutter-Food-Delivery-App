@@ -45,7 +45,8 @@ class LandingScreen extends StatelessWidget {
           Align(
             alignment: Alignment.center,
             child: Image.asset(
-              Helper.getAssetName("MealMonkeyLogo.png", "virtual"),
+              Helper.getAssetName("VendingMachineLogo.png", "virtual"),
+                scale: 2
             ),
           ),
           Align(
@@ -58,7 +59,7 @@ class LandingScreen extends StatelessWidget {
                 children: [
                   Flexible(
                     child: Text(
-                      "Discover the best foods from over 1,000 restaurants and fast delivery to your doorstep",
+                      "Best foods from over 1,000 vending machine",
                       textAlign: TextAlign.center,
                     ),
                   ),

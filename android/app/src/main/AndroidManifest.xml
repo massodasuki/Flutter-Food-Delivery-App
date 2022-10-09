@@ -1,7 +1,9 @@
+<!--suppress AndroidDomInspection -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.monkey_app_demo">
+    <uses-permission android:name="android.permission.INTERNET"/>
    <application
-        android:label="monkey_app_demo"
+        android:label="Food Vending Machine"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"

@@ -1,12 +1,139 @@
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:monkey_app_demo/const/colors.dart';
 import 'package:monkey_app_demo/screens/dessertScreen.dart';
 import 'package:monkey_app_demo/utils/helper.dart';
 import 'package:monkey_app_demo/widgets/customNavBar.dart';
 import 'package:monkey_app_demo/widgets/searchBar.dart';
 
-class MenuScreen extends StatelessWidget {
+import 'package:http/http.dart' as http;
+import '../const/apiConstants.dart';
+import '../model/machineModel.dart';
+
+final storage = FlutterSecureStorage();
+
+// A function that converts a response body into a List<Photo>.
+List<Machine> parsePhotos(String responseBody) {
+  final parsed = jsonDecode(responseBody).cast<Map<String, dynamic>>();
+
+  return parsed.map<Machine>((json) => Machine.fromJson(json)).toList();
+}
+Future<String> _getListMachine() async {
+  String bearerToken = await storage.read(key: "bearer-token");
+  var url = Uri.parse(ApiConstants.baseUrl + ApiConstants.getVendingMachinesEnpoint);
+  // log('url --> $url');
+  final response = await http.get(
+      Uri.parse(url.toString()),
+  headers: <String, String>{
+  'Content-Type': 'application/json; charset=UTF-8',
+  'Authorization': 'Bearer $bearerToken',
+  }
+  // ,
+  // body: jsonEncode(<String, String>{
+    //   'email': email,
+    //   'password': password,
+    //   'name': 'developer'
+    // }),
+  );
+
+  var test = response.statusCode;
+  log('response --> $test');
+
+  if (response.statusCode == 200) {
+    // If the server did return a 201 CREATED response,
+    // then parse the JSON.
+    var test = response.body;
+    log('response --> $test');
+
+    // return 1;
+    return response.body;
+
+    // var list = (json.decode(response.body)['data'] as List)
+    //     .map((data) => Machine.fromJson(data))
+    //     .toList();
+
+    // return parsePhotos(response.body);
+
+  } else {
+    // If the server did not return a 201 CREATED response,
+    // then throw an exception.
+    throw Exception('Failed to get machines.');
+  }
+}
+
+
+class MenuScreen extends StatefulWidget {
   static const routeName = "/menuScreen";
+
+  @override
+  State<MenuScreen> createState() => _MenuScreenState();
+}
+
+class _MenuScreenState extends State<MenuScreen> {
+  List<dynamic> machineList = [];
+
+  Future<void> readJson() async {
+
+    String bearerToken = await storage.read(key: "bearer-token");
+    var url = Uri.parse(ApiConstants.baseUrl + ApiConstants.getVendingMachinesEnpoint);
+    // log('url --> $url');
+    final response = await http.get(
+        Uri.parse(url.toString()),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $bearerToken',
+        }
+      // ,
+      // body: jsonEncode(<String, String>{
+      //   'email': email,
+      //   'password': password,
+      //   'name': 'developer'
+      // }),
+    );
+
+    final data = await json.decode(response.body);
+    // log('dataaaaaa is listtttttt --> $data');
+    machineList = data['data']
+        .map((data) => Machine.fromJson(data)).toList();
+    // print(machineList);
+    // log('listtttttt --> ${machineList[0]}');
+    // // log('listtttttt --> ${machineList[0]['m_id']}');
+    // log('listtttttt --> ${machineList[0].m_id}');
+    // log('listtttttt --> ${machineList.length}');
+    setState(() {
+      machineList = data['data']
+          .map((data) => Machine.fromJson(data)).toList();
+    });
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+    readJson();
+  }
+
+
+  // getListMachines() async {
+  //  var response = await  _getListMachine();
+  //  this.count = response.length;
+  //  var list = jsonEncode(response);
+  //  log('initState $list');
+  //  // log('initState ${response.length}');
+  //  // log('initState ${response[0].getMLatitude}');
+  //
+  //  machines = (list as List)
+  //       .map((data) => Machine.fromJson(data))
+  //       .toList();
+  //  // machines = parsePhotos(response);
+  //   log('initState ${machines[0].getMLatitude}');
+  //   return machines;
+  // }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,7 +150,7 @@ class MenuScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        "Menu",
+                        "Vending Machine",
                         style: Helper.getTheme(context).headline5,
                       ),
                       Image.asset(
@@ -60,86 +187,43 @@ class MenuScreen extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 20.0),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              MenuCard(
-                                imageShape: ClipOval(
-                                  child: Container(
-                                    height: 60,
-                                    width: 60,
-                                    child: Image.asset(
-                                      Helper.getAssetName(
-                                          "western2.jpg", "real"),
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                ),
-                                name: "Food",
-                                count: "120",
-                              ),
-                              SizedBox(
-                                height: 20,
-                              ),
-                              MenuCard(
-                                imageShape: ClipRRect(
-                                  borderRadius: BorderRadius.circular(10),
-                                  child: Container(
-                                    height: 60,
-                                    width: 60,
-                                    child: Image.asset(
-                                      Helper.getAssetName(
-                                          "coffee2.jpg", "real"),
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                ),
-                                name: "Beverage",
-                                count: "220",
-                              ),
-                              SizedBox(
-                                height: 20,
-                              ),
-                              GestureDetector(
-                                onTap: () {
-                                  Navigator.of(context)
-                                      .pushNamed(DessertScreen.routeName);
-                                },
-                                child: MenuCard(
-                                  imageShape: ClipPath(
-                                    clipper: CustomTriangle(),
-                                    child: Container(
-                                      height: 70,
-                                      width: 70,
-                                      child: Image.asset(
-                                        Helper.getAssetName(
-                                            "dessert.jpg", "real"),
-                                        fit: BoxFit.cover,
+                            children : List.generate(machineList.length, (index) {
+                              return Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: GestureDetector(
+                                  onTap: () {
+                                    Navigator.of(context)
+                                        .pushNamed(DessertScreen.routeName,
+                                      // we are passing a value to the settings page
+                                      arguments:  {'index': index});
+                                  },
+                                  child: MenuCard(
+                                    imageShape: ClipPath(
+                                      clipper: CustomTriangle(),
+                                      child: Container(
+                                        height: 70,
+                                        width: 70,
+                                        child: Image.network(machineList[index].m_picture, fit: BoxFit.cover,),
+                                        // child: Image.asset(
+                                        //   Helper.getAssetName(
+                                        //       "dessert.jpg", "real"),
+                                        //   fit: BoxFit.cover,
+                                        // ),
                                       ),
                                     ),
-                                  ),
-                                  name: "Desserts",
-                                  count: "135",
-                                ),
-                              ),
-                              SizedBox(
-                                height: 20,
-                              ),
-                              MenuCard(
-                                imageShape: ClipPath(
-                                  clipper: CustomDiamond(),
-                                  child: Container(
-                                    height: 80,
-                                    width: 80,
-                                    child: Image.asset(
-                                      Helper.getAssetName(
-                                          "hamburger3.jpg", "real"),
-                                      fit: BoxFit.cover,
-                                    ),
+                                    name: "Desserts",
+                                    count: "135",
+                                    m_id: machineList[index].m_id,
+                                    m_name: machineList[index].m_name,
+                                    m_picture: "",
+                                    m_latitude: machineList[index].m_latitude,
+                                    m_longitude: machineList[index].m_longitude,
+                                    m_desc: machineList[index].m_desc
+
                                   ),
                                 ),
-                                name: "Promotions",
-                                count: "25",
-                              ),
-                            ],
+                              );
+                            }),
                           ),
                         )
                       ],
@@ -165,14 +249,32 @@ class MenuCard extends StatelessWidget {
     Key key,
     @required String name,
     @required String count,
+    String m_id,
+    String m_name,
+    String m_picture,
+    String m_latitude,
+    String m_longitude,
+    String m_desc,
     @required Widget imageShape,
   })  : _name = name,
         _count = count,
+        _m_id = m_id,
+        _m_name = m_name,
+        _m_picture = m_picture,
+        _m_latitude = m_latitude,
+        _m_longitude = m_longitude,
+        _m_desc = m_desc,
         _imageShape = imageShape,
         super(key: key);
 
   final String _name;
   final String _count;
+  final String _m_id;
+  final String _m_name;
+  final String _m_picture;
+  final String _m_latitude;
+  final String _m_longitude;
+  final String _m_desc;
   final Widget _imageShape;
 
   @override
@@ -180,7 +282,7 @@ class MenuCard extends StatelessWidget {
     return Stack(
       children: [
         Container(
-          height: 80,
+          height: 120,
           width: double.infinity,
           margin: const EdgeInsets.symmetric(
             horizontal: 20,
@@ -209,15 +311,32 @@ class MenuCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                _name,
+                _m_id,
                 style: Helper.getTheme(context).headline4.copyWith(
-                      color: AppColor.primary,
-                    ),
+                  color: AppColor.primary,
+                ),
               ),
               SizedBox(
-                height: 5,
+                height: 0.1,
               ),
-              Text("$_count items")
+              Text("$_m_name "),
+              SizedBox(
+                height: 0.1,
+              ),
+              Text("$_m_picture "),
+              SizedBox(
+                height: 0.1,
+              ),
+              Text("$_m_latitude "),
+              SizedBox(
+                height: 0.1,
+              ),
+              Text("$_m_longitude "),
+              SizedBox(
+                height: 0.1,
+              ),
+              Text("$_m_desc ")
+
             ],
           ),
         ),
@@ -251,7 +370,8 @@ class MenuCard extends StatelessWidget {
             ),
           ),
         ),
-      ],
+    SizedBox(
+    height: 90)],
     );
   }
 }

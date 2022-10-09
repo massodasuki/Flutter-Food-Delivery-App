@@ -7,7 +7,7 @@ import '../model/userModel.dart';
 class ApiService {
   Future<List<UserModel>> getUsers() async {
     try {
-      var url = Uri.parse(ApiConstants.baseUrl + ApiConstants.usersEndpoint);
+      var url = Uri.parse(ApiConstants.baseUrl + ApiConstants.loginEndpoint);
       var response = await http.get(url);
       if (response.statusCode == 200) {
         log(response.body);

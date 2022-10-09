@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "968085961073",
+    "project_id": "flutter-vending-machine-app",
+    "storage_bucket": "flutter-vending-machine-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:968085961073:android:3e29312dc6ac0322cdded0",
+        "android_client_info": {
+          "package_name": "com.example.monkey_app_demo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "968085961073-p09oofrrer9su3j5v8p1dffb3unrbih4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBZPgZjXxOhluqqm2qseaazh1TXNVSdYgc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "968085961073-p09oofrrer9su3j5v8p1dffb3unrbih4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

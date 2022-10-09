@@ -1,6 +1,9 @@
+import 'dart:convert';
+import 'dart:developer';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:monkey_app_demo/screens/forgetPwScreen.dart';
-
+import '../screens/menuScreen.dart';
 import '../const/colors.dart';
 import '../screens/forgetPwScreen.dart';
 import '../screens/signUpScreen.dart';
@@ -10,6 +13,53 @@ import '../widgets/customTextInput.dart';
 import '../model/userModel.dart';
 import '../utils/apiService.dart';
 
+import 'package:http/http.dart' as http;
+import '../const/apiConstants.dart';
+
+final storage = FlutterSecureStorage();
+
+Map<String, dynamic> parseResponse(String response) {
+  return jsonDecode(response);
+}
+
+Future<bool> _login(String email, String password) async {
+  var url = Uri.parse(ApiConstants.baseUrl + ApiConstants.loginEndpoint);
+  // log('url --> $url');
+  final response = await http.post(
+    Uri.parse(url.toString()),
+    headers: <String, String>{
+      'Content-Type': 'application/json; charset=UTF-8',
+    },
+    body: jsonEncode(<String, String>{
+      'email': email,
+      'password': password,
+      'name': 'developer'
+    }),
+  );
+
+  var test = response.statusCode;
+  // log('response --> $test');
+
+  if (response.statusCode == 200) {
+    // If the server did return a 201 CREATED response,
+    // then parse the JSON.
+    // var test = response.body;
+    // log('response --> $test');
+    var data = parseResponse(response.body);
+    final bearerToken = data['data']['token'];
+    log('bearerToken --> $bearerToken');
+
+    // To save the value, use this:
+    await storage.write(key: "bearer-token", value: bearerToken);
+
+    // return 1;
+    return Future.value(true);
+  } else {
+    // If the server did not return a 201 CREATED response,
+    // then throw an exception.
+    throw Exception('Failed to login. $test');
+  }
+}
 
 class LoginScreen extends StatefulWidget {
   static const routeName = "/loginScreen";
@@ -17,11 +67,9 @@ class LoginScreen extends StatefulWidget {
 
   @override
   State<LoginScreen> createState() => _LoginScreen();
-
 }
 
 class _LoginScreen extends State<LoginScreen> {
-
   final txtEmail = TextEditingController();
   final txtPassword = TextEditingController();
 
@@ -33,6 +81,7 @@ class _LoginScreen extends State<LoginScreen> {
     super.dispose();
   }
 
+  void submit() {}
 
   @override
   Widget build(BuildContext context) {
@@ -70,16 +119,28 @@ class _LoginScreen extends State<LoginScreen> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          return AlertDialog(
-                            // Retrieve the text that the user has entered by using the
-                            // TextEditingController.
-                            content: Text(txtEmail.text + txtPassword.text)
-                          );
-                        },
-                      );
+                      _login(txtEmail.text, txtPassword.text).then((val) {
+                        showDialog(
+                            context: context,
+                            builder: (_) => AlertDialog(
+                              title: Text('Dialog Title'),
+                              content: Text('Success'),
+                            )
+                        );
+                        Navigator.of(context)
+                            .pushReplacementNamed(MenuScreen.routeName);
+                      }).catchError((error, stackTrace) {
+                        showDialog(
+                            context: context,
+                            builder: (_) => AlertDialog(
+                              title: Text('Dialog Title'),
+                              content: Text("outer: $error"),
+                            )
+                        );
+
+                        // error is SecondError
+                        print("outer: $error");
+                      });
                     },
                     child: Text("Login"),
                   ),
@@ -186,4 +247,3 @@ class _LoginScreen extends State<LoginScreen> {
     );
   }
 }
-
